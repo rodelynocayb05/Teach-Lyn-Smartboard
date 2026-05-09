@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kawaii Classroom Smartboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sniglet&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pastel-pink: #FFD1DC;
+            --pastel-blue: #AEC6CF;
+            --pastel-purple: #E0BBE4;
+            --pastel-yellow: #FDFD96;
+            --panel-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Sniglet', cursive;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--pastel-pink);
+            background-size: cover;
+            background-position: center;
+        }
+
+        #bg-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -1;
+            display: none;
+        }
+
+        /* Layout Panels */
+        .panel {
+            position: absolute;
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+            border: 3px solid white;
+        }
+
+        #left-panel {
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            flex-direction: column;
+        }
+
+        #right-panel {
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            flex-direction: column;
+        }
+
+        #bottom-panel {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Buttons */
+        .btn {
+            background: white;
+            border: 3px solid var(--pastel-purple);
+            border-radius: 15px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #555;
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 70px;
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+            background: var(--pastel-pink);
+        }
+
+        .btn-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .btn-text {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Modals & Iframes */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70vw;
+            height: 70vh;
+            background: white;
+            border-radius: 25px;
+            border: 5px solid var(--pastel-blue);
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 20px;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .close-btn {
+            background: #ff6961;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: 2px dashed var(--pastel-pink);
+            border-radius: 15px;
+        }
+
+        .link-editor {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .link-editor input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid var(--pastel-purple);
+        }
+
+        /* Tools popups */
+        .tool-modal {
+            width: 300px;
+            height: auto;
+            text-align: center;
+        }
+
+        .big-text {
+            font-size: 4rem;
+            color: var(--pastel-purple);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <video id="bg-video" autoplay loop muted></video>
+
+    <div id="left-panel" class="panel">
+        <button class="btn" title="Greetings"><div class="btn-icon">👋</div></button>
+        <button class="btn" title="Classroom Routine"><div class="btn-icon">📋</div></button>
+    </div>
+
+    <div id="right-panel" class="panel">
+        <button class="btn" onclick="openTool('settings-modal')"><div class="btn-icon">⚙️</div><div class="btn-text">BG</div></button>
+        <button class="btn" onclick="openTool('music-modal')"><div class="btn-icon">🎵</div></button>
+        <button class="btn" onclick="openTool('video-modal')"><div class="btn-icon">🎬</div></button>
+        <button class="btn" onclick="openContent('Dragon Time', 'https://www.youtube.com/embed/5qap5aO4i9A')"><div class="btn-icon">🐉</div></button>
+        <button class="btn" onclick="openTool('timer-modal')"><div class="btn-icon">⏱️</div></button>
+        <button class="btn" onclick="openTool('picker-modal')"><div class="btn-icon">🎲</div></button>
+    </div>
+
+    <div id="bottom-panel" class="panel">
+        <button class="btn" onclick="closeAll()"><div class="btn-icon">🏠</div><div class="btn-text">Home</div></button>
+        <button class="btn" onclick="openContent('Warm-Up', '')"><div class="btn-icon">🏃</div><div class="btn-text">Warm-Up</div></button>
+        <button class="btn" onclick="openContent('Review', '')"><div class="btn-icon">🔍</div><div class="btn-text">Review</div></button>
+        <button class="btn" onclick="openContent('Prior Knowledge', '')"><div class="btn-icon">🧠</div><div class="btn-text">Knowledge</div></button>
+        <button class="btn" onclick="openContent('Lesson of the Day', '')"><div class="btn-icon">📚</div><div class="btn-text">Lesson</div></button>
+        <button class="btn" onclick="openContent('Let\'s Practice', '')"><div class="btn-icon">✏️</div><div class="btn-text">Practice</div></button>
+        <button class="btn" onclick="openContent('Assessment', '')"><div class="btn-icon">📝</div><div class="btn-text">Assessment</div></button>
+        <button class="btn" onclick="openContent('Wrap-Up', '')"><div class="btn-icon">🎁</div><div class="btn-text">Wrap-Up</div></button>
+    </div>
+
+    <div id="content-modal" class="modal">
+        <div class="modal-header">
+            <h2 id="modal-title" style="margin:0;">Title</h2>
+            <button class="close-btn" onclick="closeAll()">X</button>
+        </div>
+        <div class="link-editor">
+            <input type="text" id="lesson-link" placeholder="Paste link here (e.g., Google Slides or Embed link) & press Load">
+            <button class="btn" style="padding: 5px 10px; min-width: auto;" onclick="loadLink()">Load</button>
+        </div>
+        <iframe id="content-frame" src=""></iframe>
+    </div>
+
+    <div id="settings-modal" class="modal tool-modal">
+        <div class="modal-header">
+            <h3 style="margin:0;">Change Background</h3>
+            <button class="close-btn" onclick="closeAll()">X</button>
+        </div>
+        <p>Upload your Canva picture or video:</p>
+        <input type="file" id="bg-upload" accept="image/*,video/*" onchange="changeBackground(event)">
+    </div>
+
+    <div id="timer-modal" class="modal tool-modal">
+        <div class="modal-header">
+            <h3 style="margin:0;">Class Timer</h3>
+            <button class="close-btn" onclick="closeAll()">X</button>
+        </div>
+        <input type="number" id="timer-mins" placeholder="Minutes" style="width: 80px; padding: 5px;">
+        <button class="btn" style="display:inline; padding: 5px;" onclick="startTimer()">Start</button>
+        <div class="big-text" id="timer-display">00:00</div>
+    </div>
+
+    <div id="picker-modal" class="modal tool-modal">
+        <div class="modal-header">
+            <h3 style="margin:0;">Student Picker</h3>
+            <button class="close-btn" onclick="closeAll()">X</button>
+        </div>
+        <p>Number of students:</p>
+        <input type="number" id="max-students" value="30" style="width: 80px; padding: 5px;">
+        <button class="btn" style="display:inline; padding: 5px;" onclick="pickStudent()">Pick!</button>
+        <div class="big-text" id="picker-display">?</div>
+    </div>
+
+    <div id="music-modal" class="modal tool-modal">
+        <div class="modal-header">
+            <h3 style="margin:0;">Class Music</h3>
+            <button class="close-btn" onclick="closeAll()">X</button>
+        </div>
+        <input type="file" accept="audio/*" onchange="loadMedia(event, 'audio-player')">
+        <audio id="audio-player" controls style="width: 100%; margin-top: 20px;"></audio>
+    </div>
+
+    <div id="video-modal" class="modal tool-modal">
+        <div class="modal-header">
+            <h3 style="margin:0;">Class Video</h3>
+            <button class="close-btn" onclick="closeAll()">X</button>
+        </div>
+        <input type="file" accept="video/*" onchange="loadMedia(event, 'video-player')">
+        <video id="video-player" controls style="width: 100%; margin-top: 20px;"></video>
+    </div>
+
+    <script>
+        // --- Modals & Navigation ---
+        function closeAll() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(m => m.style.display = 'none');
+        }
+
+        function openContent(title, linkStr) {
+            closeAll();
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('lesson-link').value = linkStr;
+            document.getElementById('content-frame').src = linkStr;
+            document.getElementById('content-modal').style.display = 'flex';
+        }
+
+        function openTool(id) {
+            closeAll();
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        function loadLink() {
+            const url = document.getElementById('lesson-link').value;
+            document.getElementById('content-frame').src = url;
+        }
+
+        // --- Background Changer ---
+        function changeBackground(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const fileURL = URL.createObjectURL(file);
+            const videoEl = document.getElementById('bg-video');
+            
+            if (file.type.startsWith('video/')) {
+                document.body.style.backgroundImage = 'none';
+                videoEl.src = fileURL;
+                videoEl.style.display = 'block';
+            } else {
+                videoEl.style.display = 'none';
+                document.body.style.backgroundImage = `url('${fileURL}')`;
+            }
+        }
+
+        // --- Tools functionality ---
+        let timerInterval;
+        function startTimer() {
+            clearInterval(timerInterval);
+            let time = document.getElementById('timer-mins').value * 60;
+            const display = document.getElementById('timer-display');
+            
+            timerInterval = setInterval(() => {
+                let minutes = Math.floor(time / 60);
+                let seconds = time % 60;
+                display.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                if (time <= 0) {
+                    clearInterval(timerInterval);
+                    display.innerText = "Time's Up!";
+                }
+                time--;
+            }, 1000);
+        }
+
+        function pickStudent() {
+            const max = document.getElementById('max-students').value;
+            const result = Math.floor(Math.random() * max) + 1;
+            document.getElementById('picker-display').innerText = result;
+        }
+
+        function loadMedia(event, elementId) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById(elementId).src = URL.createObjectURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
